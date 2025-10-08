@@ -1,12 +1,76 @@
+
 library(ggplot2)
+
 library(dplyr)
 library(patchwork)
 library(fmsb)
-install.packages("ggradar")
 library(ggplotify)
+
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(viridis) 
 
 data <- read.csv("youtube_shorts_tiktok_trends_2025.csv")
 
+convert_country_codes <- function(codes) {
+  conversion_map <- c(
+    "Ae" = "AE", "Ar" = "AR", "Au" = "AU", "Br" = "BR", "Ca" = "CA",
+    "Cn" = "CN", "Co" = "CO", "De" = "DE", "Eg" = "EG", "Es" = "ES",
+    "Fr" = "FR", "Gb" = "GB", "Id" = "ID", "In" = "IN", "It" = "IT",
+    "Jp" = "JP", "Ke" = "KE", "Kr" = "KR", "Ma" = "MA", "Mx" = "MX",
+    "Ng" = "NG", "Nl" = "NL", "Ph" = "PH", "Pl" = "PL", "Ru" = "RU",
+    "Sa" = "SA", "Se" = "SE", "Tr" = "TR", "Us" = "US", "Za" = "ZA"
+  )
+  return(conversion_map[codes])
+}
+
+# Преобразуем коды в данных
+data$country_iso <- convert_country_codes(data$country)
+
+# Проверяем результат
+print("Проверка преобразования кодов:")
+print(data.frame(old_code = head(data$country), new_code = head(data$country_iso)))
+
+
+# Агрегируем данные с исправленными кодами
+country_counts_corrected <- data %>%
+  group_by(country_iso) %>%
+  summarise(n_videos = n()) %>%
+  ungroup()
+
+print("Количество видео по странам (исправленные коды):")
+print(country_counts_corrected)
+
+# Объединяем данные с картой по правильным ISO кодам
+world_map_data_corrected <- left_join(world_map, country_counts_corrected, by = c("iso_a2" = "country_iso"))
+world_map_data_corrected$n_videos[is.na(world_map_data_corrected$n_videos)] <- 0
+
+# Проверяем, какие страны теперь совпали
+matched_countries <- country_counts_corrected$country_iso[country_counts_corrected$country_iso %in% world_map$iso_a2]
+print("Коды стран, которые успешно совпали с картой:")
+print(matched_countries)
+
+# Строим карту
+ggplot(data = world_map_data_corrected) +
+  geom_sf(aes(fill = n_videos), color = "white", size = 0.1) +
+  scale_fill_viridis_c(
+    name = "Количество видео",
+    option = "plasma",
+    trans = "log1p",
+    breaks = c(0, 100, 1000, 2000, 5000),
+    labels = scales::comma_format()
+  ) +
+  labs(
+    title = "География загрузки видео (TikTok и YouTube Shorts)",
+    subtitle = "За период 9 месяцев",
+    caption = "Данные по 30 странам мира"
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+    plot.subtitle = element_text(hjust = 0.5, size = 12)
+  )
 table(data$platform)
 #  Круговая диаграмма просмотров по платформам 
 platform_views <- aggregate(views ~ platform, data, sum)

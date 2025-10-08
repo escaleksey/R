@@ -213,8 +213,8 @@ fill_lagrange_quarters <- function(data, data_thinned_na, degree = 2) {
     plots[[q]] <- ggplot(df_q, aes(x = Month)) +
       geom_line(aes(y = Original, color = "Исходные"), group = 1) +
       geom_point(aes(y = Original, color = "Исходные")) +
-      geom_line(aes(y = Filled, color = "Заполнено Лагранжем"), group = 1, linetype = "dashed") +
-      geom_point(aes(y = Filled, color = "Заполнено Лагранжем"), shape = 1) +
+      geom_line(aes(y = Filled, color = "Заполнено Лагранжем"), group = 1) +
+      geom_point(aes(y = Filled, color = "Заполнено Лагранжем")) +
       labs(
         title = paste("Четверть", q),
         x = "Месяц",

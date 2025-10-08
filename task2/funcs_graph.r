@@ -3,7 +3,7 @@ library(ggplot2)
 
 
 dist_graph <- function(data){ 
-    ggplot(data, aes(x = `Monthly.beer.production`)) +
+    gr1 <- ggplot(data, aes(x = `Monthly.beer.production`)) +
     geom_histogram(aes(y = ..density..), bins = 20, fill = "skyblue", color = "black", alpha = 0.6) + # nolint
     stat_function(fun = dnorm, 
                 args = list(mean = mean(data$Monthly.beer.production, na.rm = TRUE), 
