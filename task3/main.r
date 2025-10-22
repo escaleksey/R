@@ -1,12 +1,12 @@
-#getwd()
-setwd("D:/My Code/R/R/task3")
+getwd()
+setwd("C:/Users/scana/PycharmProjects/R/task3")
 data <- read.csv("household_power_consumption.csv")
 
 library(forecast)
 library(FNN)
 library(ggplot2)
 data$Global_active_power <- as.numeric(gsub(",", ".", data$Global_active_power))
-# ---------- 1. Подготовка данных ----------
+
 series <- na.omit(data$Global_active_power)
 
 
@@ -17,14 +17,10 @@ test  <- series[(n_tr + 1):n]
 
 
 
-
-# ---------- 3. Получение прогнозов ----------
 source("funcs_regress.r")
-#res_arima <- forecast_arima(train, test)
-#forecast_ma_windows(train, test, windows = c(3, 5, 10, 20, 50))
-#forecast_knn_windows(train, test, windows = c(5, 7), ks = c(3, 5))
-#res_ma    <- forecast_ma(train, test, window = 10)
-#res_knn   <- forecast_knn(train, test, k = 5, window = 5)
+res_arima <- forecast_arima(train, test)
+res_ma    <- forecast_ma(train, test, window = 10)
+res_knn   <- forecast_knn(train, test, k = 3, window = 7)
 
 
 source("multi_param.r")
@@ -61,14 +57,14 @@ forecast_lm_poly(
   target_col = "Global_active_power",
   poly_cols = c("Voltage", "Global_intensity"),
   test_df = test_df,
-  filename = "МНК по 2_параметрам.png"
+  filename = "МНК по 2 параметрам.png"
 )
 forecast_svm(
   train_df,
   target_col = "Global_active_power",
   feature_cols = c("Voltage", "Global_intensity"),
   test_df = test_df,
-  filename = "SVM по 2_параметрам.png"
+  filename = "SVM по 2 параметрам.png"
 )
 
 
