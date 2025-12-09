@@ -1,84 +1,91 @@
-import numpy as np
 import pandas as pd
+import numpy as np
+import random
 
-# --- Популярные товары с весами ---
-popular_products = {
-    "Banana": 20.257234,
-    "Bag of Organic Bananas": 12.485862,
-    "Organic Strawberries": 9.472439,
-    "Organic Baby Spinach": 4.114864,
-    "Organic Hass Avocado": 3.388712,
-    "Organic Avocado": 3.119155,
-    "Large Lemon": 2.552536,
-    "Organic Raspberries": 2.514028,
-    "Organic Whole Milk": 2.376499,
-    "Strawberries": 2.326989,
-    "Limes": 12.233469,
-    "Organic Garlic": 1.864892,
-    "Organic Zucchini": 1.853889,
-    "Organic Yellow Onion": 1.820882,
-    "Cucumber Kirby": 1.787875,
-    "Organic Blueberries": 1.639344,
-    "Organic Fuji Apple": 1.611838,
-    "Apple Honeycrisp Organic": 1.540323,
-    "Organic Lemon": 1.468808,
-    "Seedless Red Grapes": 1.402795,
-    "Sparkling Water Grapefruit": 1.391792,
-    "Yellow Onions": 10.375289,
-    "Organic Baby Carrots": 1.353284,
-    "Organic Baby Arugula": 1.347783,
-    "Organic Grape Tomatoes": 1.331280,
-    "Honeycrisp Apple": 1.309275,
-    "Organic Half & Half": 1.292771,
-    "Organic Cucumber": 1.281769,
-    "Organic Small Bunch Celery": 1.276268,
-    "Organic Large Extra Fancy Fuji Apple": 1.270767,
-    "Carrots": 1.215755,
-    "Original Hummus": 1.188250,
-    "Organic Gala Apples": 1.177247,
-    "Fresh Cauliflower": 1.160744,
-    "Michigan Organic Kale": 1.138739,
-    "Organic Red Onion": 1.127737,
-    "Organic Blackberries": 1.122236,
-    "Organic Cilantro": 1.105732,
-    "Spring Water": 15.105732,
-    "Half & Half": 1.100231,
-    "Asparagus": 1.094730,
-    "100% Whole Wheat Bread": 1.083728,
-    "Raspberries": 1.061723,
-    "Organic Italian Parsley Bunch": 1.034217,
-    "Organic Unsweetened Almond Milk": 1.028716,
-    "Organic Tomato Cluster": 1.023215,
-    "Organic Whole String Cheese": 1.012213,
-    "Organic Red Bell Pepper": 1.006711,
-    "Red Vine Tomato": 1.001210
+popular_products = [
+    "Banana", "Soap", "Strawberries", "Greek Yogurt", "Whole Milk",
+    "Avocado", "Lemon", "Raspberries", "Blueberries", "Fuji Apple",
+    "Honeycrisp Apple", "Garlic", "Zucchini", "Yellow Onion",
+    "Cucumber", "Baby Spinach", "Baby Carrots", "Grape Tomatoes",
+    "Carrots", "Hummus", "Gala Apples", "Cauliflower", "Kale",
+    "Red Onion", "Blackberries", "Cilantro", "Still Water",
+    "Sparkling Water", "Asparagus", "Whole Wheat Bread",
+    "Italian Parsley", "Almond Milk", "Tomato Cluster",
+    "String Cheese", "Red Bell Pepper", "Vine Tomato",
+    "Salmon Fillet", "Pasta Penne", "Mozzarella Cheese",
+    "Fresh Basil", "Olive Oil"
+]
+
+clusters = {
+    "fruits": [
+        "Banana", "Strawberries", "Blueberries", "Raspberries",
+        "Fuji Apple", "Honeycrisp Apple", "Blackberries"
+    ],
+    "vegetables": [
+        "Cucumber", "Zucchini", "Cauliflower", "Baby Carrots",
+        "Red Onion", "Yellow Onion", "Red Bell Pepper",
+        "Vine Tomato", "Tomato Cluster"
+    ],
+    "greens": [
+        "Baby Spinach", "Kale", "Cilantro", "Italian Parsley", "Fresh Basil"
+    ],
+    "dairy_bakery": [
+        "Greek Yogurt", "Whole Milk", "String Cheese",
+        "Mozzarella Cheese", "Whole Wheat Bread"
+    ],
+    "water_fruit": [
+        "Still Water", "Sparkling Water", "Banana", "Strawberries", "Blueberries"
+    ],
+    "fish_lemon": [
+        "Salmon Fillet", "Lemon", "Olive Oil"
+    ],
+    "pasta_set": [
+        "Pasta Penne", "Olive Oil", "Tomato Cluster",
+        "Mozzarella Cheese", "Fresh Basil"
+    ],
+    "snack_combo": [
+        "Hummus", "Carrots", "Baby Carrots", "Cucumber"
+    ]
 }
 
-product_names = list(popular_products.keys())
-weights = np.array(list(popular_products.values()))
-weights = weights / weights.sum()  # нормировка для np.random.choice
+# веса для вероятностей
+weights = {p: random.random() for p in popular_products}
+weights = {k: v / sum(weights.values()) for k, v in weights.items()}
 
-# --- Настройки генерации ---
-N_ORDERS = 200_000            # сколько заказов сгенерировать
-MIN_ITEMS = 3                 # минимум товаров в заказе
-MAX_ITEMS = 10                # максимум товаров
+def generate_basket():
+    basket_size = np.random.randint(2, 10)
 
-rows = []
+    # выбираем тематический кластер 70% времени
+    if random.random() < 0.7:
+        cluster_key = random.choice(list(clusters.keys()))
+        cluster_items = clusters[cluster_key]
+    else:
+        cluster_items = popular_products
 
-for order_id in range(1, N_ORDERS + 1):
-    n_items = np.random.randint(MIN_ITEMS, MAX_ITEMS + 1)
+    basket = []
+    for _ in range(basket_size):
+        # 70% — из кластера, 30% — из общего пула
+        if random.random() < 0.7:
+            item = random.choice(cluster_items)
+        else:
+            item = random.choices(popular_products, weights=list(weights.values()))[0]
 
-    # выбираем уникальные товары без повторений
-    chosen = np.random.choice(product_names, size=n_items, replace=False, p=weights)
+        basket.append(item)
 
-    for product in chosen:
-        rows.append([order_id, product])
+    # удаляем дубли
+    basket = list(set(basket))
 
-# --- Создаём DataFrame ---
-df = pd.DataFrame(rows, columns=["order_id", "product_name"])
+    return ", ".join(basket)
 
-# --- Сохраняем CSV ---
+
+# Генерируем датасет
+N = 150000
+
+df = pd.DataFrame({
+    "product_name": [generate_basket() for _ in range(N)]
+})
+
 df.to_csv("orders.csv", index=False)
 
-print("Готово! Сгенерировано строк:", len(df))
-print("Файл сохранён: synthetic_popular_orders.csv")
+print(df.head())
+print("Generated:", len(df), "records")
