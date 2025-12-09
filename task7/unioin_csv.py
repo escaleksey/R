@@ -72,13 +72,11 @@ def generate_basket():
 
         basket.append(item)
 
-    # удаляем дубли
     basket = list(set(basket))
 
     return ", ".join(basket)
 
 
-# Генерируем датасет
 N = 150000
 
 df = pd.DataFrame({
