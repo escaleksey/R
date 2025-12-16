@@ -1,0 +1,12 @@
+names:
+- rabbit
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: my-first-project-pp9ow
+  url: https://universe.roboflow.com/rabbits-niks7/my-first-project-pp9ow/dataset/2
+  version: 2
+  workspace: rabbits-niks7
+test: ../test/images
+train: ../train/images
+val: ../valid/images
